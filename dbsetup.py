@@ -10,8 +10,8 @@ class User(Base):
 
     name  = Column(String(250), nullable = False)
     id = Column(Integer, primary_key = True)
-    #email?
-    #picture???
+    email = Column(String(250), nullable = False)
+    picture = Column(String(250))
 
 class Category(Base):
     __tablename__ = 'category'

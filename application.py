@@ -26,6 +26,7 @@ session = DBSession()
 @app.route('/category/')
 def showCategories():
     # TODO: render public and private pages
+    # TODO: option to show/sort/highlight categories for current user
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     categories = session.query(Category).all()
@@ -56,6 +57,7 @@ def deleteCategory(category_id):
     categoryToDelete = session.query(Category).filter_by(id = category_id).one()
     if categoryToDelete.user_id == login_session['user_id'] and request.method == 'POST':
         session.delete(categoryToDelete)
+        categoryItems = session.query(Item).filter_by(category_id = categoryToDelete.id).delete()
         session.commit()
         flash ("%s has been deleted" % categoryToDelete.name)
         return redirect(url_for('showCategories'))
@@ -86,24 +88,78 @@ def editCategory(category_id):
 
 # TODO: item pages
 #show all items for category
+@app.route('/category/<int:category_id>/')
 @app.route('/category/<int:category_id>/item/')
-def showItems(category_id):
-    return "Page to show items of category #%s" % category_id
+def showCategoryItems(category_id):
+    # TODO: public & private pages
+    category = session.query(Category).filter_by(id = category_id).one()
+    items = session.query(Item).filter_by(category_id = category_id).all()
+    return render_template('items.html', category = category, items = items)
 
 #add item
-@app.route('/category/<int:category_id>/item/new/')
+@app.route('/category/<int:category_id>/item/new/', methods=['GET','POST'])
 def newItem(category_id):
-    return "Page to make a new item for category #%s" % category_id
+    if 'username' not in login_session:
+        flash("You must be logged in to add a new item.")
+        return redirect(url_for('showLogin'))
+
+    category = session.query(Category).filter_by(id = category_id).one()
+    if request.method == 'POST' and login_session['user_id'] == category.user_id:
+        itemToCreate = Item(name = request.form['name'], description = request.form['description'],
+                            user_id = login_session['user_id'],
+                            category_id = category_id)
+        session.add(itemToCreate)
+        session.commit()
+        flash("Item %s of category %s has been created!" % (itemToCreate.name, category.name))
+        return redirect(url_for('showCategoryItems', category_id = category_id))
+    elif login_session['user_id'] == category.user_id:
+        return render_template('newitem.html', category = category)
+    else:
+        flash("You can only add items to categories that you have created.")
+        return redirect(url_for('showCategories'))
 
 #edit item
-@app.route('/category/<int:category_id>/item/<int:item_id>/edit/')
+@app.route('/category/<int:category_id>/item/<int:item_id>/edit/', methods=['GET','POST'])
 def editItem(category_id, item_id):
-    return "Page to edit item #%s for category #%s" % (item_id, category_id)
+    if 'username' not in login_session:
+        flash("You must be logged in to edit an item.")
+        return redirect('/login')
+
+    #category = session.query(Category).filter_by(id = category_id).one()
+    itemToEdit = session.query(Item).filter_by(id = item_id).one()
+    if request.method == 'POST' and login_session['user_id'] == itemToEdit.user_id:
+        if request.form['name']:
+            itemToEdit.name = request.form['name']
+        if request.form['description']:
+            itemToEdit.description = request.form['description']
+        session.add(itemToEdit)
+        session.commit()
+        flash("%s has been updated." % itemToEdit.name)
+        return redirect(url_for('showCategoryItems', category_id = category_id))
+    elif login_session['user_id'] == itemToEdit.user_id:
+        return render_template('edititem.html', category_id = category_id, item = itemToEdit)
+    else:
+        flash("You can only edit items that you have created.")
+        return redirect(url_for('showCategoryItems', category_id = category_id))
 
 #delete item
-@app.route('/category/<int:category_id>/item/<int:item_id>/delete/')
+@app.route('/category/<int:category_id>/item/<int:item_id>/delete/', methods=['GET','POST'])
 def deleteItem(category_id, item_id):
-    return "Page to delete item #%s for category #%s" % (item_id, category_id)
+    if 'username' not in login_session:
+        flash("You must be logged in to delete an item.")
+        return redirect('/login')
+
+    itemToDelete = session.query(Item).filter_by(id = item_id).one()
+    if request.method == 'POST' and login_session['user_id'] == itemToDelete.user_id:
+        session.delete(itemToDelete)
+        session.commit()
+        flash("%s has been deleted." % itemToDelete.name)
+        return redirect(url_for('showCategoryItems', category_id = category_id))
+    elif login_session['user_id'] == itemToDelete.user_id:
+        return render_template('deleteitem.html', category_id = category_id, item = itemToDelete)
+    else:
+        flash("You can only delete items that you have created.")
+        return redirect(url_for('showCategoryItems', category_id = category_id))
 
 @app.route('/login/')
 def showLogin():
@@ -125,19 +181,10 @@ def gitConnect():
     h = httplib2.Http()
     headers = {'Accept': 'application/json'}
     access_token = json.loads(h.request(uri, 'POST', headers = headers)[1])['access_token']
-    #print "RESULT"
-    #jsonResult = json.loads(result)
-    print access_token
     uri = "https://api.github.com/user?access_token=" + access_token
     h = httplib2.Http()
-    print "********************************************************"
     userData = json.loads(h.request(uri, 'GET')[1])
-    print "********************************************************"
-    print userData
-    print "********************************************************"
-    #print user[0]
-    #print "********************************************************"
-    #print user[1]
+
     login_session['provider'] = 'github'
     login_session['username'] = userData['login']
     login_session['name'] = userData['name']

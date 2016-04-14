@@ -8,5 +8,5 @@
     <button type="submit">Update</button>
 </form>
 
-<button><a href="{{ url_for('showItems', category_id = category.id) }}">Cancel</a></button>
+<button><a href="{{ url_for('showCategoryItems', category_id = category.id) }}">Cancel</a></button>
 {% endblock %}

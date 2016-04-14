@@ -22,6 +22,22 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+# JSON endpoints
+@app.route('/category/JSON/')
+def categoriesJSON():
+    categories = session.query(Category).all()
+    return jsonify(Category=[i.serialize for i in categories])
+
+@app.route('/category/<int:category_id>/JSON/')
+def categoryItemsJSON(category_id):
+    items = session.query(Item).filter_by(category_id = category_id).all()
+    return jsonify(Item=[i.serialize for i in items])
+
+@app.route('/category/<int:category_id>/item/<int:item_id>/JSON/')
+def itemJSON(category_id, item_id):
+    item = session.query(Item).filter_by(id = item_id).one()
+    return jsonify(Item=item.serialize)
+
 @app.route('/')
 @app.route('/category/')
 def showCategories():
@@ -117,6 +133,11 @@ def newItem(category_id):
     else:
         flash("You can only add items to categories that you have created.")
         return redirect(url_for('showCategories'))
+
+@app.route('/category/<int:category_id>/item/<int:item_id>/')
+def showItem(category_id, item_id):
+    item = session.query(Item).filter_by(id = item_id).one()
+    return "This will display the info for: %s" % item.name
 
 #edit item
 @app.route('/category/<int:category_id>/item/<int:item_id>/edit/', methods=['GET','POST'])

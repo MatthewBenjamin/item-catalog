@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+{% block content %}
+
+<h3>Update {{category.name}}?</h3>
+
+<form action="{{ url_for('editCategory', category_id = category.id ) }}" method="POST">
+    <input type="text" placeholder="{{category.name}}" name="name">
+    <button type="submit">Update</button>
+</form>
+
+<button><a href="{{ url_for('showItems', category_id = category.id) }}">Cancel</a></button>
+{% endblock %}

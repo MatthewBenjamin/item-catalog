@@ -31,7 +31,6 @@ def showCategories():
     categories = session.query(Category).all()
     return render_template('categories.html', categories = categories)
 
-#add category
 @app.route('/category/new/', methods=['GET','POST'])
 def newCategory():
     if 'username' not in login_session:
@@ -48,30 +47,39 @@ def newCategory():
     else:
         return render_template("newcategory.html")
 
-# TODO: html & form handling
-@app.route('/category/<int:category_id>/delete/')
+@app.route('/category/<int:category_id>/delete/', methods=['GET','POST'])
 def deleteCategory(category_id):
     if 'username' not in login_session:
         flash("You must be logged in and the creator of a category in order to delete it.")
         return redirect(url_for('showLogin'))
 
-    category = session.query(Category).filter_by(id = category_id).one()
-    if category.user_id == login_session['user_id']:
-        return "Page to delete category \"%s\"" % category.name
+    categoryToDelete = session.query(Category).filter_by(id = category_id).one()
+    if categoryToDelete.user_id == login_session['user_id'] and request.method == 'POST':
+        session.delete(categoryToDelete)
+        session.commit()
+        flash ("%s has been deleted" % categoryToDelete.name)
+        return redirect(url_for('showCategories'))
+    elif categoryToDelete.user_id == login_session['user_id']:
+        return render_template('deletecategory.html', category = categoryToDelete)
     else:
         flash("You can only delete categories that you have created.")
         return redirect(url_for('showCategories'))
 
-# TODO: html & form handling
-@app.route('/category/<int:category_id>/edit/')
+@app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
 def editCategory(category_id):
     if 'username' not in login_session:
         flash("You must be logged in and the creator of a category in order to edit it.")
         return redirect(url_for('showLogin'))
 
-    category = session.query(Category).filter_by(id = category_id).one()
-    if category.user_id == login_session['user_id']:
-        return "Page to edit category \"%s\"" % category.name
+    categoryToEdit = session.query(Category).filter_by(id = category_id).one()
+    if categoryToEdit.user_id == login_session['user_id'] and request.method == 'POST':
+        categoryToEdit.name = request.form['name']
+        flash("Name updated to %s" % categoryToEdit.name)
+        session.add(categoryToEdit)
+        session.commit()
+        return redirect(url_for('showCategories'))
+    elif categoryToEdit.user_id == login_session['user_id']:
+        return render_template('editcategory.html', category = categoryToEdit)
     else:
         flash("You can only edit categories that you have created.")
         return redirect(url_for('showCategories'))

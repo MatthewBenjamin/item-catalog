@@ -76,15 +76,54 @@ def gitConnect():
     login_session['picture'] = userData['avatar_url']
     login_session['email'] = userData['email']
     login_session['github_id'] = userData['id']
-    # TODO: search for user in DB, store user info in DB
+
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
     flash("You are now logged in, " + login_session['name'])
     return redirect(url_for('showCategories'))
 
 @app.route('/gitDisconnect')
 def gitDisconnect():
-    return "This page will logout the user from Github (if possible)"
+    if login_session['provider'] == 'github':
+        del login_session['provider']
+        del login_session['username']
+        del login_session['name']
+        del login_session['picture']
+        del login_session['email']
+        del login_session['github_id']
+        del login_session['user_id']
+        # TODO: insert link into logout page or revoke authorization or ask to revoke
+        return """
+                You have been logged out, however this application
+                is this authorized to access your Github account. To
+                revoke this authorization, visit your account page on Github.com
+            """
+    else:
+        return "You were not logged in"
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email = email).one()
+        return user.id
+    except:
+        return None
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id = user_id).one()
+    return user
+
+def createUser(login_session):
+    newUser = User(name = login_session['name'],
+                    email = login_session['email'],
+                    picture = login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email = login_session['email']).one()
+    return user.id
 
 if __name__ == '__main__':
-  app.secret_key = 'super_secret_key'
+  app.secret_key = "shhh_dont_share_this_with_anyone"
   app.debug = True
   app.run(host = '0.0.0.0', port = 5000)

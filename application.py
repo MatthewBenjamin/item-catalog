@@ -15,6 +15,13 @@ import json
 from flask import make_response
 import requests
 
+#Connect to Database and create database session
+engine = create_engine('sqlite:///itemcatalog.db')
+Base.metadata.bind = engine
+
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
 @app.route('/')
 def showCategories():
     if not login_session['username']:

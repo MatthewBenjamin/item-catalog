@@ -1,0 +1,22 @@
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.header {
+    text-align: right;
+    background-color: whitesmoke;
+}
+
+.center-content {
+    text-align: center;
+}
+
+.description {
+    min-width: 230px;
+    width: 70%;
+    height: 150px;
+}

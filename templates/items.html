@@ -1,17 +1,24 @@
 {% extends "main.html" %}
 {% block content %}
 
-<h2>Items for {{category.name}}</h2>
+<div class="row center-content">
+    <h2>{{category.name}}</h2>
+    <a class="button button-primary" href="{{ url_for('newItem', category_id = category.id)}}">Create a new item</a>
+    <br>
+    <br>
+    </div>
+</div>
 
-<ul>
-    {% for item in items %}
-    <li>
-        <h3><a href="#">{{item.name}}</a></h3>
-        <a href="{{ url_for('editItem', category_id = category.id, item_id = item.id) }}">Edit</a>
-        <a href="{{ url_for('deleteItem', category_id = category.id, item_id = item.id) }}">Delete</a>
-    </li>
-    {% endfor %}
-</ul>
+{% for item in items %}
+    <div class="row center-content">
+        <button>{{item.name}}</button>
+    </div>
+    <div class="row center-content">
+        <a href="{{ url_for('editItem', category_id = category.id, item_id = item.id)}}">Edit</a>
+        <a href="{{ url_for('deleteItem', category_id = category.id, item_id = item.id)}}">Delete</a>
+        <br>
+        <br>
+    </div>
 
-<h3><a href="{{ url_for('newItem', category_id = category.id) }}">Create a new item for the {{category.name}} category</a></h3>
+{% endfor %}
 {% endblock %}

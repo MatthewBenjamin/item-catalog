@@ -231,11 +231,12 @@ def gitDisconnect():
         del login_session['github_id']
         del login_session['user_id']
         # TODO: insert link into logout page or revoke authorization or ask to revoke
-        return """
+        flash("""
                 You have been logged out, however this application
-                is this authorized to access your Github account. To
-                revoke this authorization, visit your account page on Github.com
-            """
+                is still authorized to access your Github account. To
+                revoke this authorization, visit your account page at Github.com
+            """)
+        return redirect('/')
     else:
         return "You were not logged in"
 

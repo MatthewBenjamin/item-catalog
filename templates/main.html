@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='skeleton.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>MAIN.HTML</h1>
-    {% with messages = get_flashed_messages() %}
+    <div class="container">
+    {% include "header.html" %}
+        <div class="row">
+            <div class="twelve columns center-content">
+                <a href="{{ url_for('showCategories') }}" ><h1>Item Catalog</h1></a>
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="twelve columns center-content">
+                {% with messages = get_flashed_messages() %}
 
-    {% if messages %}
-        <h2> Messages:</h2>
-        <ul>
-        {% for message in messages %}
-            <li> <strong> {{ message }} </strong> </li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-    {% endwith %}
+                {% if messages %}
+                    <ul>
+                    {% for message in messages %}
 
-    {% block content %}
-    {% endblock %}
+                        <li> <strong> {{ message }} </strong> </li>
+
+                    {% endfor %}
+                    </ul>
+                    <hr>
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
 </body>
 </html>

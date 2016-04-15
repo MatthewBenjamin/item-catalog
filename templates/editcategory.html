@@ -4,9 +4,10 @@
 <h3>Update {{category.name}}?</h3>
 
 <form action="{{ url_for('editCategory', category_id = category.id ) }}" method="POST">
-    <input type="text" placeholder="{{category.name}}" name="name">
-    <button type="submit">Update</button>
+    <input type="text" placeholder="{{category.name}}" name="name" size="30">
+    <br>
+    <button class="button-primary" type="submit">UPDATE</button>
+    <a class="button" href="{{ url_for('showCategoryItems', category_id = category.id) }}">CANCEL</a>
 </form>
 
-<button><a href="{{ url_for('showCategoryItems', category_id = category.id) }}">Cancel</a></button>
 {% endblock %}

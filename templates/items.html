@@ -1,9 +1,16 @@
 {% extends "main.html" %}
+{% block head %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+{% endblock %}
 {% block content %}
 
 <div class="row center-content">
     <h2>{{category.name}}</h2>
+    {% if session['user_id'] == category.user_id %}
     <a class="button button-primary" href="{{ url_for('newItem', category_id = category.id)}}">Create a new item</a>
+    {% endif %}
+    <br>
+    <button class="toggle-button" id="desc-toggle">Toggle Item Descriptions</button>
     <br>
     <br>
     </div>
@@ -11,14 +18,28 @@
 
 {% for item in items %}
     <div class="row center-content">
-        <button>{{item.name}}</button>
+        <a class="button" href=" {{ url_for('showItem', category_id = category.id, item_id = item.id) }}">{{item.name}}</a>
+        <p class="item-desc">{{item.description}}</p>
     </div>
+    {% if session['user_id'] == item.user_id %}
     <div class="row center-content">
         <a href="{{ url_for('editItem', category_id = category.id, item_id = item.id)}}">Edit</a>
         <a href="{{ url_for('deleteItem', category_id = category.id, item_id = item.id)}}">Delete</a>
         <br>
         <br>
     </div>
+    {% endif %}
 
 {% endfor %}
+
+<script type="text/javascript">
+    function toggleOneDesc(item) {
+        // body...
+    }
+
+    $("#desc-toggle").click(function() {
+        $(this).toggleClass('toggle-button');
+        $(".item-desc").toggle(duration = 300)
+    });
+</script>
 {% endblock %}

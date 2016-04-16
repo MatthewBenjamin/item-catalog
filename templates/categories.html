@@ -6,14 +6,17 @@
         <h3>Categories</h3>
     </div>
 </div>
+
+{% if 'username' in session %}
 <div class="row center-content">
     <a class="button button-primary" href="{{ url_for('newCategory')}}">Create a new category</a>
     <br>
     <br>
     </div>
 </div>
+{% endif %}
 
-{% for c in categories %}
+{% for c in user_categories %}
     <div class="row center-content">
         <a class="button" href="{{ url_for('showCategoryItems', category_id = c.id)}}">{{c.name}}</a>
     </div>
@@ -23,6 +26,13 @@
         <br>
         <br>
     </div>
+{% endfor %}
 
+{% for c in public_categories %}
+    <div class="row center-content">
+        <a class="button" href="{{ url_for('showCategoryItems', category_id = c.id)}}">{{c.name}}</a>
+        <br>
+        <br>
+    </div>
 {% endfor %}
 {% endblock %}

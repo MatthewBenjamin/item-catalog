@@ -41,12 +41,14 @@ def itemJSON(category_id, item_id):
 @app.route('/')
 @app.route('/category/')
 def showCategories():
-    # TODO: render public and private pages
-    # TODO: option to show/sort/highlight categories for current user
-    if 'username' not in login_session:
-        return redirect(url_for('showLogin'))
-    categories = session.query(Category).all()
-    return render_template('categories.html', categories = categories)
+    if 'user_id' in login_session:
+        user_id = login_session['user_id']
+        userCategories = session.query(Category).filter_by(user_id = user_id).order_by(asc(Category.name))
+        publicCategories = session.query(Category).filter(user_id != user_id).order_by(asc(Category.name))
+        return render_template('categories.html', public_categories = publicCategories, user_categories = userCategories)
+    else:
+        categories = session.query(Category).all()
+        return render_template('categories.html', public_categories = categories)
 
 @app.route('/category/new/', methods=['GET','POST'])
 def newCategory():
@@ -107,9 +109,8 @@ def editCategory(category_id):
 @app.route('/category/<int:category_id>/')
 @app.route('/category/<int:category_id>/item/')
 def showCategoryItems(category_id):
-    # TODO: public & private pages
     category = session.query(Category).filter_by(id = category_id).one()
-    items = session.query(Item).filter_by(category_id = category_id).all()
+    items = session.query(Item).filter_by(category_id = category_id).order_by(asc(Item.name))
     return render_template('items.html', category = category, items = items)
 
 #add item
@@ -137,7 +138,8 @@ def newItem(category_id):
 @app.route('/category/<int:category_id>/item/<int:item_id>/')
 def showItem(category_id, item_id):
     item = session.query(Item).filter_by(id = item_id).one()
-    return "This will display the info for: %s" % item.name
+    category = session.query(Category).filter_by(id = category_id).one()
+    return render_template('singleitem.html', category = category, item = item)
 
 #edit item
 @app.route('/category/<int:category_id>/item/<int:item_id>/edit/', methods=['GET','POST'])

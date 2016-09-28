@@ -24,11 +24,15 @@ def getUserID(email):
         return None
 
 
+def saveRecord(newRecord):
+    session.add(newRecord)
+    session.commit()
+
+
 def createUser(login_session):
     newUser = User(name=login_session['name'],
                    email=login_session['email'],
                    picture=login_session['picture'])
-    session.add(newUser)
-    session.commit()
+    saveRecord(newUser)
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id

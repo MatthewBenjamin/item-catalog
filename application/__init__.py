@@ -59,12 +59,10 @@ def newCategory():
         flash("You must be logged in order to add a new category.")
         return redirect(url_for('showLogin'))
     if request.method == 'POST':
-        name = request.form['name']
-        user_id = login_session['user_id']
-        newCategory = Category(name=name, user_id=user_id)
-        db_utils.session.add(newCategory)
-        db_utils.session.commit()
-        flash("Category %s created!" % name)
+        newCategory = Category(name=request.form['name'],
+                               user_id=login_session['user_id'])
+        db_utils.saveRecord(newCategory)
+        flash("Category %s created!" % newCategory.name)
         return redirect(url_for('showCategories'))
     else:
         return render_template("newcategory.html")
@@ -111,9 +109,8 @@ def editCategory(category_id):
     if (categoryToEdit.user_id == login_session['user_id'] and
             request.method == 'POST'):
         categoryToEdit.name = request.form['name']
+        db_utils.saveRecord(categoryToEdit)
         flash("Name updated to %s" % categoryToEdit.name)
-        db_utils.session.add(categoryToEdit)
-        db_utils.session.commit()
         return redirect(url_for('showCategories'))
     elif categoryToEdit.user_id == login_session['user_id']:
         return render_template('editcategory.html', category=categoryToEdit)
@@ -147,8 +144,7 @@ def newItem(category_id):
                             description=request.form['description'],
                             user_id=login_session['user_id'],
                             category_id=category_id)
-        db_utils.session.add(itemToCreate)
-        db_utils.session.commit()
+        db_utils.saveRecord(itemToCreate)
         flash("Item %s of category %s has been created!" % (
             itemToCreate.name, category.name))
         return redirect(url_for('showCategoryItems', category_id=category_id))
@@ -178,14 +174,17 @@ def editItem(category_id, item_id):
     itemToEdit = db_utils.getByID(Item, item_id)
     if (request.method == 'POST' and
             login_session['user_id'] == itemToEdit.user_id):
+        # TODO: error handling for blank field
         if request.form['name']:
             itemToEdit.name = request.form['name']
         if request.form['description']:
             itemToEdit.description = request.form['description']
-        db_utils.session.add(itemToEdit)
-        db_utils.session.commit()
+
+        db_utils.saveRecord(itemToEdit)
         flash("%s has been updated." % itemToEdit.name)
+
         return redirect(url_for('showCategoryItems', category_id=category_id))
+
     elif login_session['user_id'] == itemToEdit.user_id:
         return render_template(
             'edititem.html', category_id=category_id, item=itemToEdit)

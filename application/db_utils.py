@@ -1,7 +1,7 @@
 # db_utils.py
-from sqlalchemy import create_engine, asc
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dbsetup import Base, User, Category, Item
+from dbsetup import Base, User
 
 # Connect to Database and create database session
 engine = create_engine('sqlite:///itemcatalog.db')
@@ -12,7 +12,6 @@ session = DBSession()
 
 
 def getByID(model, lookup_id):
-    # TODO: won't work because this module uses a different DB session?
     result = session.query(model).filter_by(id=lookup_id).one()
     return result
 

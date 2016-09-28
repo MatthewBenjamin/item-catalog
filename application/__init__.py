@@ -10,7 +10,6 @@ from dbsetup import Category, Item
 import user_auth
 import db_utils
 
-
 app = Flask(__name__)
 
 
@@ -32,7 +31,7 @@ def categoryItemsJSON(category_id):
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/JSON/')
 def itemJSON(category_id, item_id):
-    item = db_utils.session.query(Item).filter_by(id=item_id).one()
+    item = db_utils.getByID(Item, item_id)
     return jsonify(Item=item.serialize)
 
 
@@ -80,8 +79,7 @@ def deleteCategory(category_id):
         """)
         return redirect(url_for('showLogin'))
 
-    categoryToDelete = db_utils.session.query(
-        Category).filter_by(id=category_id).one()
+    categoryToDelete = db_utils.getByID(Category, category_id)
 
     if (categoryToDelete.user_id == login_session['user_id'] and
             request.method == 'POST'):
@@ -108,10 +106,8 @@ def editCategory(category_id):
         """)
         return redirect(url_for('showLogin'))
 
-    categoryToEdit = db_utils.session.query(Category).filter_by(
-        id=category_id).one()
-    # TODO: implement helper, i.e.
-    # categoryToEdit = db_utils.getByID(Category, category_id)
+    categoryToEdit = db_utils.getByID(Category, category_id)
+
     if (categoryToEdit.user_id == login_session['user_id'] and
             request.method == 'POST'):
         categoryToEdit.name = request.form['name']
@@ -131,7 +127,7 @@ def editCategory(category_id):
 @app.route('/category/<int:category_id>/')
 @app.route('/category/<int:category_id>/item/')
 def showCategoryItems(category_id):
-    category = db_utils.session.query(Category).filter_by(id=category_id).one()
+    category = db_utils.getByID(Category, category_id)
     items = db_utils.session.query(Item).filter_by(
         category_id=category_id).order_by(asc(Item.name))
     return render_template('items.html', category=category, items=items)
@@ -144,7 +140,7 @@ def newItem(category_id):
         flash("You must be logged in to add a new item.")
         return redirect(url_for('showLogin'))
 
-    category = db_utils.session.query(Category).filter_by(id=category_id).one()
+    category = db_utils.getByID(Category, category_id)
     if (request.method == 'POST' and
             login_session['user_id'] == category.user_id):
         itemToCreate = Item(name=request.form['name'],
@@ -165,8 +161,8 @@ def newItem(category_id):
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/')
 def showItem(category_id, item_id):
-    item = db_utils.session.query(Item).filter_by(id=item_id).one()
-    category = db_utils.session.query(Category).filter_by(id=category_id).one()
+    item = db_utils.getByID(Item, item_id)
+    category = db_utils.getByID(Category, category_id)
     return render_template('singleitem.html', category=category, item=item)
 
 
@@ -179,7 +175,7 @@ def editItem(category_id, item_id):
         flash("You must be logged in to edit an item.")
         return redirect('/login')
 
-    itemToEdit = db_utils.session.query(Item).filter_by(id=item_id).one()
+    itemToEdit = db_utils.getByID(Item, item_id)
     if (request.method == 'POST' and
             login_session['user_id'] == itemToEdit.user_id):
         if request.form['name']:
@@ -207,7 +203,7 @@ def deleteItem(category_id, item_id):
         flash("You must be logged in to delete an item.")
         return redirect('/login')
 
-    itemToDelete = db_utils.session.query(Item).filter_by(id=item_id).one()
+    itemToDelete = db_utils.getByID(Item, item_id)
     if (request.method == 'POST' and
             login_session['user_id'] == itemToDelete.user_id):
         db_utils.session.delete(itemToDelete)

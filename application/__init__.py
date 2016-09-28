@@ -17,16 +17,14 @@ app = Flask(__name__)
 @app.route('/category/JSON/')
 def categoriesJSON():
     categories = db_utils.session.query(Category).all()
-    # TODO: make general serialize helper for arrays of data models
-    return jsonify(Category=[i.serialize for i in categories])
+    return jsonify(Category=Category.serializeList(categories))
 
 
 @app.route('/category/<int:category_id>/JSON/')
 def categoryItemsJSON(category_id):
     items = db_utils.session.query(Item).filter_by(
         category_id=category_id).all()
-    # TODO: make general serialize helper for arrays of data models
-    return jsonify(Item=[i.serialize for i in items])
+    return jsonify(Item=Item.serializeList(items))
 
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/JSON/')
@@ -38,19 +36,20 @@ def itemJSON(category_id, item_id):
 @app.route('/')
 @app.route('/category/')
 def showCategories():
+    allCategories = db_utils.session.query(Category)
     if 'user_id' in login_session:
         user_id = login_session['user_id']
-        userCategories = db_utils.session.query(Category).filter_by(
+        userCategories = allCategories.filter_by(
             user_id=user_id).order_by(asc(Category.name))
-        publicCategories = db_utils.session.query(
-            Category).filter(user_id != user_id).order_by(asc(Category.name))
+        publicCategories = allCategories.filter(
+            user_id != user_id).order_by(asc(Category.name))
         return render_template(
             'categories.html',
             public_categories=publicCategories,
             user_categories=userCategories)
     else:
-        categories = db_utils.session.query(Category).all()
-        return render_template('categories.html', public_categories=categories)
+        return render_template('categories.html',
+                               public_categories=allCategories.all())
 
 
 @app.route('/category/new/', methods=['GET', 'POST'])

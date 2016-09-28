@@ -15,7 +15,13 @@ class User(Base):
     picture = Column(String(250))
 
 
-class Category(Base):
+class Serializeable():
+    @classmethod
+    def serializeList(cls, inputList):
+        return [i.serialize for i in inputList]
+
+
+class Category(Base, Serializeable):
     __tablename__ = 'category'
 
     name = Column(String(250), nullable=False)
@@ -32,7 +38,7 @@ class Category(Base):
         }
 
 
-class Item(Base):
+class Item(Base, Serializeable):
     __tablename__ = 'item'
 
     name = Column(String(250), nullable=False)

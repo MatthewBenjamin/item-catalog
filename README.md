@@ -16,8 +16,9 @@ Utilizes SqlAlchemy.
    github_client_secret = # your github oath2 secret
    ```
 
-4. To start the server inside the Vagrant VM, enter:
+4. Once inside the Vagrant VM, navigate to /vagrant/item-catalog and enter:
 
    ```
+   python application/dbsetup.py
    python runserver.py
    ```

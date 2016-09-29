@@ -7,7 +7,7 @@
 <div class="row center-content">
     <h2>{{category.name}}</h2>
     {% if session['user_id'] == category.user_id %}
-    <a class="button button-primary" href="{{ url_for('newItem', category_id = category.id)}}">Create a new item</a>
+    <a class="button button-primary" href="{{ url_for('new_item', category_id = category.id)}}">Create a new item</a>
     {% endif %}
     <br>
     <button class="toggle-button" id="desc-toggle">Toggle Item Descriptions</button>
@@ -18,13 +18,13 @@
 
 {% for item in items %}
     <div class="row center-content">
-        <a class="button" href=" {{ url_for('showItem', category_id = category.id, item_id = item.id) }}">{{item.name}}</a>
+        <a class="button" href=" {{ url_for('show_item', category_id = category.id, item_id = item.id) }}">{{item.name}}</a>
         <p class="item-desc">{{item.description}}</p>
     </div>
     {% if session['user_id'] == item.user_id %}
     <div class="row center-content">
-        <a href="{{ url_for('editItem', category_id = category.id, item_id = item.id)}}">Edit</a>
-        <a href="{{ url_for('deleteItem', category_id = category.id, item_id = item.id)}}">Delete</a>
+        <a href="{{ url_for('edit_item', category_id = category.id, item_id = item.id)}}">Edit</a>
+        <a href="{{ url_for('delete_item', category_id = category.id, item_id = item.id)}}">Delete</a>
         <br>
         <br>
     </div>

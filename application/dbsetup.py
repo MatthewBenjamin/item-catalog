@@ -17,7 +17,7 @@ class User(Base):
 
 class Serializeable():
     @classmethod
-    def serializeList(cls, inputList):
+    def serialize_list(cls, inputList):
         return [i.serialize for i in inputList]
 
 

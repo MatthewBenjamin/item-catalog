@@ -2,7 +2,7 @@
 {% block content %}
 
     <div class="row center-content">
-        <a href="{{ url_for('showCategoryItems', category_id = category.id)}}"><h2>{{category.name}}</h2></a>
+        <a href="{{ url_for('show_category_items', category_id = category.id)}}"><h2>{{category.name}}</h2></a>
     </div>
     <div class="row center-content">
         <h3>{{item.name}}</h3>
@@ -10,9 +10,9 @@
     </div>
     {% if session['user_id'] == item.user_id %}
     <div class="row center-content">
-        <a href="{{ url_for('editItem', category_id = category.id, item_id = item.id)}}">Edit</a>
+        <a href="{{ url_for('edit_item', category_id = category.id, item_id = item.id)}}">Edit</a>
         <br>
-        <a href="{{ url_for('deleteItem', category_id = category.id, item_id = item.id)}}">Delete</a>
+        <a href="{{ url_for('delete_item', category_id = category.id, item_id = item.id)}}">Delete</a>
         <br>
         <br>
     </div>

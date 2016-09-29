@@ -3,7 +3,6 @@ from flask import (Flask, render_template, request, redirect, jsonify, url_for,
 from flask import session as login_session
 import json
 
-# TODO: move these operations into db_utils.py
 from sqlalchemy import asc
 from dbsetup import Category, Item
 
@@ -15,33 +14,33 @@ app = Flask(__name__)
 
 # JSON endpoints
 @app.route('/category/JSON/')
-def categoriesJSON():
+def categories_json():
     categories = db_utils.session.query(Category).all()
-    return jsonify(Category=Category.serializeList(categories))
+    return jsonify(Category=Category.serialize_list(categories))
 
 
 @app.route('/category/<int:category_id>/JSON/')
-def categoryItemsJSON(category_id):
+def category_items_json(category_id):
     items = db_utils.session.query(Item).filter_by(
         category_id=category_id).all()
-    return jsonify(Item=Item.serializeList(items))
+    return jsonify(Item=Item.serialize_list(items))
 
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/JSON/')
-def itemJSON(category_id, item_id):
-    item = db_utils.getByID(Item, item_id)
+def item_json(category_id, item_id):
+    item = db_utils.get_by_id(Item, item_id)
     return jsonify(Item=item.serialize)
 
 
 @app.route('/')
 @app.route('/category/')
-def showCategories():
-    allCategories = db_utils.session.query(Category)
+def show_categories():
+    all_categories = db_utils.session.query(Category)
     if 'user_id' in login_session:
         user_id = login_session['user_id']
-        userCategories = allCategories.filter_by(
+        userCategories = all_categories.filter_by(
             user_id=user_id).order_by(asc(Category.name))
-        publicCategories = allCategories.filter(
+        publicCategories = all_categories.filter(
             user_id != user_id).order_by(asc(Category.name))
         return render_template(
             'categories.html',
@@ -49,81 +48,78 @@ def showCategories():
             user_categories=userCategories)
     else:
         return render_template('categories.html',
-                               public_categories=allCategories.all())
+                               public_categories=all_categories.all())
 
 
 @app.route('/category/new/', methods=['GET', 'POST'])
-def newCategory():
+def new_category():
     if 'username' not in login_session:
         flash("You must be logged in order to add a new category.")
-        return redirect(url_for('showLogin'))
+        return redirect(url_for('show_login'))
     if request.method == 'POST':
-        newCategory = Category(name=request.form['name'],
-                               user_id=login_session['user_id'])
-        db_utils.saveRecord(newCategory)
-        flash("Category %s created!" % newCategory.name)
-        return redirect(url_for('showCategories'))
+        new_category = Category(name=request.form['name'],
+                                user_id=login_session['user_id'])
+        db_utils.save_record(new_category)
+        flash("Category %s created!" % new_category.name)
+        return redirect(url_for('show_categories'))
     else:
         return render_template("newcategory.html")
 
 
 @app.route('/category/<int:category_id>/delete/', methods=['GET', 'POST'])
-def deleteCategory(category_id):
+def delete_category(category_id):
     if 'username' not in login_session:
         flash("""
             You must be logged in and the creator of a category in order to
             delete it.
         """)
-        return redirect(url_for('showLogin'))
+        return redirect(url_for('show_login'))
 
-    categoryToDelete = db_utils.getByID(Category, category_id)
+    category_to_delete = db_utils.get_by_id(Category, category_id)
 
-    if (categoryToDelete.user_id == login_session['user_id'] and
+    if (category_to_delete.user_id == login_session['user_id'] and
             request.method == 'POST'):
-        db_utils.session.delete(categoryToDelete)
-        db_utils.session.query(Item).filter_by(
-            category_id=categoryToDelete.id).delete()
-        db_utils.session.commit()
-        flash("%s has been deleted" % categoryToDelete.name)
-        return redirect(url_for('showCategories'))
-    elif categoryToDelete.user_id == login_session['user_id']:
+        db_utils.delete_category_items(category_to_delete.id)
+        db_utils.delete_record(category_to_delete)
+        flash("%s has been deleted" % category_to_delete.name)
+        return redirect(url_for('show_categories'))
+    elif category_to_delete.user_id == login_session['user_id']:
         return render_template('deletecategory.html',
-                               category=categoryToDelete)
+                               category=category_to_delete)
     else:
         flash("You can only delete categories that you have created.")
-        return redirect(url_for('showCategories'))
+        return redirect(url_for('show_categories'))
 
 
 @app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
-def editCategory(category_id):
+def edit_category(category_id):
     if 'username' not in login_session:
         flash("""
             You must be logged in and the creator of a category in order to
             edit it.
         """)
-        return redirect(url_for('showLogin'))
+        return redirect(url_for('show_login'))
 
-    categoryToEdit = db_utils.getByID(Category, category_id)
+    category_to_edit = db_utils.get_by_id(Category, category_id)
 
-    if (categoryToEdit.user_id == login_session['user_id'] and
+    if (category_to_edit.user_id == login_session['user_id'] and
             request.method == 'POST'):
-        categoryToEdit.name = request.form['name']
-        db_utils.saveRecord(categoryToEdit)
-        flash("Name updated to %s" % categoryToEdit.name)
-        return redirect(url_for('showCategories'))
-    elif categoryToEdit.user_id == login_session['user_id']:
-        return render_template('editcategory.html', category=categoryToEdit)
+        category_to_edit.name = request.form['name']
+        db_utils.save_record(category_to_edit)
+        flash("Name updated to %s" % category_to_edit.name)
+        return redirect(url_for('show_categories'))
+    elif category_to_edit.user_id == login_session['user_id']:
+        return render_template('editcategory.html', category=category_to_edit)
     else:
         flash("You can only edit categories that you have created.")
-        return redirect(url_for('showCategories'))
+        return redirect(url_for('show_categories'))
 
 
-# TODO: item pages
 # show all items for category
 @app.route('/category/<int:category_id>/')
 @app.route('/category/<int:category_id>/item/')
-def showCategoryItems(category_id):
-    category = db_utils.getByID(Category, category_id)
+def show_category_items(category_id):
+    category = db_utils.get_by_id(Category, category_id)
     items = db_utils.session.query(Item).filter_by(
         category_id=category_id).order_by(asc(Item.name))
     return render_template('items.html', category=category, items=items)
@@ -131,33 +127,34 @@ def showCategoryItems(category_id):
 
 # add item
 @app.route('/category/<int:category_id>/item/new/', methods=['GET', 'POST'])
-def newItem(category_id):
+def new_item(category_id):
     if 'username' not in login_session:
         flash("You must be logged in to add a new item.")
-        return redirect(url_for('showLogin'))
+        return redirect(url_for('show_login'))
 
-    category = db_utils.getByID(Category, category_id)
+    category = db_utils.get_by_id(Category, category_id)
     if (request.method == 'POST' and
             login_session['user_id'] == category.user_id):
-        itemToCreate = Item(name=request.form['name'],
-                            description=request.form['description'],
-                            user_id=login_session['user_id'],
-                            category_id=category_id)
-        db_utils.saveRecord(itemToCreate)
+        item_to_create = Item(name=request.form['name'],
+                              description=request.form['description'],
+                              user_id=login_session['user_id'],
+                              category_id=category_id)
+        db_utils.save_record(item_to_create)
         flash("Item %s of category %s has been created!" % (
-            itemToCreate.name, category.name))
-        return redirect(url_for('showCategoryItems', category_id=category_id))
+            item_to_create.name, category.name))
+        return redirect(url_for('show_category_items',
+                                category_id=category_id))
     elif login_session['user_id'] == category.user_id:
         return render_template('newitem.html', category=category)
     else:
         flash("You can only add items to categories that you have created.")
-        return redirect(url_for('showCategories'))
+        return redirect(url_for('show_categories'))
 
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/')
-def showItem(category_id, item_id):
-    item = db_utils.getByID(Item, item_id)
-    category = db_utils.getByID(Category, category_id)
+def show_item(category_id, item_id):
+    item = db_utils.get_by_id(Item, item_id)
+    category = db_utils.get_by_id(Category, category_id)
     return render_template('singleitem.html', category=category, item=item)
 
 
@@ -165,66 +162,69 @@ def showItem(category_id, item_id):
 @app.route(
     '/category/<int:category_id>/item/<int:item_id>/edit/',
     methods=['GET', 'POST'])
-def editItem(category_id, item_id):
+def edit_item(category_id, item_id):
     if 'username' not in login_session:
         flash("You must be logged in to edit an item.")
         return redirect('/login')
 
-    itemToEdit = db_utils.getByID(Item, item_id)
+    item_to_edit = db_utils.get_by_id(Item, item_id)
     if (request.method == 'POST' and
-            login_session['user_id'] == itemToEdit.user_id):
+            login_session['user_id'] == item_to_edit.user_id):
         # TODO: error handling for blank field
         if request.form['name']:
-            itemToEdit.name = request.form['name']
+            item_to_edit.name = request.form['name']
         if request.form['description']:
-            itemToEdit.description = request.form['description']
+            item_to_edit.description = request.form['description']
 
-        db_utils.saveRecord(itemToEdit)
-        flash("%s has been updated." % itemToEdit.name)
+        db_utils.save_record(item_to_edit)
+        flash("%s has been updated." % item_to_edit.name)
 
-        return redirect(url_for('showCategoryItems', category_id=category_id))
+        return redirect(url_for('show_category_items',
+                                category_id=category_id))
 
-    elif login_session['user_id'] == itemToEdit.user_id:
+    elif login_session['user_id'] == item_to_edit.user_id:
         return render_template(
-            'edititem.html', category_id=category_id, item=itemToEdit)
+            'edititem.html', category_id=category_id, item=item_to_edit)
     else:
         flash("You can only edit items that you have created.")
-        return redirect(url_for('showCategoryItems', category_id=category_id))
+        return redirect(url_for('show_category_items',
+                                category_id=category_id))
 
 
 # delete item
 @app.route(
     '/category/<int:category_id>/item/<int:item_id>/delete/',
     methods=['GET', 'POST'])
-def deleteItem(category_id, item_id):
+def delete_item(category_id, item_id):
     if 'username' not in login_session:
         flash("You must be logged in to delete an item.")
         return redirect('/login')
 
-    itemToDelete = db_utils.getByID(Item, item_id)
+    item_to_delete = db_utils.get_by_id(Item, item_id)
     if (request.method == 'POST' and
-            login_session['user_id'] == itemToDelete.user_id):
-        db_utils.session.delete(itemToDelete)
-        db_utils.session.commit()
-        flash("%s has been deleted." % itemToDelete.name)
-        return redirect(url_for('showCategoryItems', category_id=category_id))
-    elif login_session['user_id'] == itemToDelete.user_id:
+            login_session['user_id'] == item_to_delete.user_id):
+        db_utils.delete_record(item_to_delete)
+        flash("%s has been deleted." % item_to_delete.name)
+        return redirect(url_for('show_category_items',
+                                category_id=category_id))
+    elif login_session['user_id'] == item_to_delete.user_id:
         return render_template(
-            'deleteitem.html', category_id=category_id, item=itemToDelete)
+            'deleteitem.html', category_id=category_id, item=item_to_delete)
     else:
         flash("You can only delete items that you have created.")
-        return redirect(url_for('showCategoryItems', category_id=category_id))
+        return redirect(url_for('show_category_items',
+                                category_id=category_id))
 
 
 @app.route('/login/')
-def showLogin():
-    state = user_auth.makeState()
+def show_login():
+    state = user_auth.make_state()
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
 
 @app.route('/gitConnect/')
-def gitConnect():
+def git_connect():
     if login_session['state'] != request.args.get('state'):
         response = make_response(json.dumps('Invalid State Parameter'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -235,7 +235,7 @@ def gitConnect():
     login_session['user_id'] = user_id
     flash("You are now logged in, " + login_session['name'])
 
-    return redirect(url_for('showCategories'))
+    return redirect(url_for('show_categories'))
 
 
 @app.route('/logout/')

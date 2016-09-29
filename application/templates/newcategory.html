@@ -1,12 +1,12 @@
 {% extends "main.html" %}
 {% block content %}
 
-<form action="{{ url_for('newCategory') }}" method="post">
+<form action="{{ url_for('new_category') }}" method="post">
     <label for="name">Name:</label>
     <input type="text" name="name" size="30">
     <br>
     <button class="button-primary" type="submit">CREATE</button>
-    <a class="button" href="{{ url_for('showCategories') }}">CANCEL</a>
+    <a class="button" href="{{ url_for('show_categories') }}">CANCEL</a>
 </form>
 
 {% endblock %}

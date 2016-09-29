@@ -3,9 +3,9 @@
 
 <h3>Are you sure you want to delete {{item.name}}?</h3>
 
-<form action="{{ url_for('deleteItem', category_id = category_id, item_id = item.id) }}" method="POST">
+<form action="{{ url_for('delete_item', category_id = category_id, item_id = item.id) }}" method="POST">
     <button class="button-primary" type="submit">DELETE</button>
-    <a class="button" href="{{ url_for('showCategoryItems', category_id = category_id) }}">CANCEL</a>
+    <a class="button" href="{{ url_for('show_category_items', category_id = category_id) }}">CANCEL</a>
 </form>
 
 {% endblock%}

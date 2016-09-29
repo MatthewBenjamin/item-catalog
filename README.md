@@ -7,7 +7,7 @@ Utilizes SqlAlchemy.
 1. Download Vagrant folder from: https://github.com/udacity/fullstack-nanodegree-vm
    For instructions on installing and running Vagrant, see here: https://www.vagrantup.com/docs/getting-started/
 2. Download this repository into the same directory as the Vagrant file from step 1
-3. Add your own secrets.py file in the 'application' project directory, with:
+3. Add your own secrets.py file in the application folder in the project directory, with:
 
    ```python
    app_secret_key = # generate a secure session key, see here:
@@ -22,3 +22,5 @@ Utilizes SqlAlchemy.
    python application/dbsetup.py
    python runserver.py
    ```
+
+5. In your browser, navigate to: http://localhost:5000/
